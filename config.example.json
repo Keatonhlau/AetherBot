@@ -1,0 +1,16 @@
+{
+  "_comment": "Copy this file to config.json and fill in values. config.json is .gitignored.",
+  "pollIntervalSeconds": 300,
+  "verifyTokenTtlHours": 24,
+  "githubRepo": "wayback09/Aether",
+  "githubRegistryRepo": "wayback09/Aether-Extensions",
+  "ownerUserIds": [],
+  "guilds": {
+    "_comment": "Guild-specific overrides. Key is the guild ID.",
+    "GUILD_ID_HERE": {
+      "announceChannelIds": [],
+      "extensionDeveloperRoleId": "",
+      "verifiedDeveloperRoleId": ""
+    }
+  }
+}
