@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "postinstall": "npm run build",
+    "build": "tsc -p tsconfig.json",
     "start": "node index.js",
     "lint": "tsc --noEmit"
   },

@@ -1,0 +1,1 @@
+{"version":3,"file":"admin.d.ts","sourceRoot":"","sources":["../../src/commands/admin.ts"],"names":[],"mappings":"AAGA,OAAO,EAGL,2BAA2B,EAC5B,MAAM,YAAY,CAAC;AA4CpB,iBAAe,YAAY,CACzB,WAAW,EAAE,2BAA2B,GACvC,OAAO,CAAC,IAAI,CAAC,CA2If;AAED,eAAO,MAAM,QAAQ;;;GAAmD,CAAC"}

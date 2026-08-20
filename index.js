@@ -8,7 +8,7 @@ const distPath = path.join(__dirname, 'dist', 'index.js');
 if (!fs.existsSync(distPath)) {
   console.log('[AetherBot] Building TypeScript files...');
   try {
-    execSync('npx tsc', { stdio: 'inherit', cwd: __dirname });
+    execSync('npx tsc -p tsconfig.json', { stdio: 'inherit', cwd: __dirname });
   } catch (err) {
     console.error('[AetherBot] Failed to build TypeScript files:', err);
     process.exit(1);
