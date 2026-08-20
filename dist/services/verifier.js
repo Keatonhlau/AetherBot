@@ -56,11 +56,18 @@ async function initiateVerification(userId, extensionId) {
             reason: `Extension \`${extensionId}\` was not found in the registry.`,
         };
     }
-    // Extension must have a repository field
+    // Official extensions are team-maintained — no individual verification
+    if (extension.trust === "official") {
+        return {
+            ok: false,
+            reason: `Extension \`${extensionId}\` is maintained by the Aether team and doesn't require verification.`,
+        };
+    }
+    // Community extensions need a repository for ownership verification
     if (!extension.repository) {
         return {
             ok: false,
-            reason: `Extension \`${extensionId}\` does not have a repository configured in the registry. Verification is not possible.`,
+            reason: `Extension \`${extensionId}\` has no repository configured in the registry yet. The Aether team must add one before it can be verified.`,
         };
     }
     // Check for an existing valid token (cooldown: don't spam)
@@ -98,8 +105,17 @@ async function completeVerification(userId, extensionId, member, client) {
     if (!extension) {
         return { ok: false, reason: `Extension \`${extensionId}\` not found in the registry.` };
     }
+    if (extension.trust === "official") {
+        return {
+            ok: false,
+            reason: `Extension \`${extensionId}\` is maintained by the Aether team and doesn't require verification.`,
+        };
+    }
     if (!extension.repository) {
-        return { ok: false, reason: `Extension \`${extensionId}\` has no repository configured.` };
+        return {
+            ok: false,
+            reason: `Extension \`${extensionId}\` has no repository configured in the registry yet.`,
+        };
     }
     // Get the active token
     const tokenRecord = db_js_1.verificationTokens.getActive(userId, extensionId);
