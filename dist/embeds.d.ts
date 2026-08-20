@@ -3,6 +3,7 @@ import type { Extension } from "./services/registry.js";
 import type { GitHubRelease } from "./services/github.js";
 export declare function releaseEmbed(release: GitHubRelease): EmbedBuilder;
 export declare function extensionEmbed(ext: Extension): EmbedBuilder;
+export declare function newExtensionEmbed(ext: Extension): EmbedBuilder;
 export declare function extensionsListEmbed(exts: Extension[], page: number, totalPages: number): EmbedBuilder;
 export interface RegistryStatus {
     count: number;

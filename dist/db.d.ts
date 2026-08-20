@@ -46,6 +46,11 @@ export declare const announcedReleases: {
     has(releaseId: number): boolean;
     mark(releaseId: number, tagName: string): void;
 };
+export declare const announcedExtensions: {
+    has(extensionId: string): boolean;
+    mark(extensionId: string): void;
+    count(): number;
+};
 export declare const guildSettings: {
     get(guildId: string): GuildSettings | undefined;
     setExtensionDevRole(guildId: string, roleId: string): void;

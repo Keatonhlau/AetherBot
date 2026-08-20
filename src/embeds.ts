@@ -146,6 +146,39 @@ export function extensionEmbed(ext: Extension): EmbedBuilder {
 }
 
 // ---------------------------------------------------------------------------
+// New extension announcement embed
+// ---------------------------------------------------------------------------
+
+export function newExtensionEmbed(ext: Extension): EmbedBuilder {
+  const fields: APIEmbedField[] = [
+    { name: "Extension ID", value: `\`${ext.id}\``, inline: true },
+    { name: "Author",       value: ext.author,        inline: true },
+    { name: "Trust Tier",   value: trustBadge(ext.trust), inline: true },
+  ];
+
+  if (ext.version) {
+    fields.push({ name: "Version", value: `\`${ext.version}\``, inline: true });
+  }
+  if (ext.repository) {
+    fields.push({ name: "Repository", value: ext.repository, inline: false });
+  }
+  if (ext.install_url ?? ext.url) {
+    fields.push({
+      name: "Install URL",
+      value: ext.install_url ?? ext.url ?? "",
+      inline: false,
+    });
+  }
+
+  return base()
+    .setColor(trustColor(ext.trust))
+    .setTitle(`🔌 New Extension Released: ${ext.name}`)
+    .setDescription(ext.description ?? "_No description provided._")
+    .addFields(fields)
+    .setAuthor({ name: "Aether Extension Registry" });
+}
+
+// ---------------------------------------------------------------------------
 // Extensions list embed (paginated)
 // ---------------------------------------------------------------------------
 

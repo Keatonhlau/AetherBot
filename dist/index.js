@@ -136,7 +136,7 @@ async function main() {
     client.once("ready", async (readyClient) => {
         console.log(`[discord] Logged in as ${readyClient.user.tag}`);
         // Initial registry load
-        await (0, registry_js_1.refreshRegistry)();
+        await (0, registry_js_1.refreshRegistry)(readyClient);
         // Register registry refresh callback for role re-sync
         (0, registry_js_1.onRegistryRefresh)(async (prev, next) => {
             // Detect trust-level changes
@@ -153,7 +153,7 @@ async function main() {
             }
         });
         // Start background registry refresh loop
-        (0, registry_js_1.startRegistryRefreshLoop)();
+        (0, registry_js_1.startRegistryRefreshLoop)(readyClient);
         // Sync owner roles across all guilds on startup
         for (const guild of readyClient.guilds.cache.values()) {
             await (0, roles_js_1.syncAllRoles)(guild.id, readyClient).catch((err) => console.error(`[roles] Startup sync error in ${guild.id}:`, err));

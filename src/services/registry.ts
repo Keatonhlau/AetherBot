@@ -2,8 +2,11 @@
 // Fetches index.json from GitHub with a 10-minute in-memory cache.
 // Serves stale data gracefully when GitHub is unavailable.
 
+import { Client, TextChannel } from "discord.js";
 import { GitHubClient } from "./github.js";
 import { config } from "../config.js";
+import { announcedExtensions, announceChannels } from "../db.js";
+import { newExtensionEmbed } from "../embeds.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,7 +77,7 @@ function parseRegistry(raw: unknown): Extension[] {
 // Refresh logic
 // ---------------------------------------------------------------------------
 
-export async function refreshRegistry(): Promise<void> {
+export async function refreshRegistry(discordClient?: Client): Promise<void> {
   const client = new GitHubClient(config.githubToken);
   const result = await client.getRegistryIndex(config.githubRegistryRepo);
 
@@ -92,6 +95,23 @@ export async function refreshRegistry(): Promise<void> {
   cache = { extensions, fetchedAt: Date.now(), healthy: true };
   console.log(`[registry] Refreshed — ${extensions.length} extensions loaded`);
 
+  // Handle new extension announcements
+  const isFirstRun = announcedExtensions.count() === 0;
+  for (const ext of extensions) {
+    if (!announcedExtensions.has(ext.id)) {
+      if (isFirstRun) {
+        // Mark initial extensions without spamming channels on first boot
+        announcedExtensions.mark(ext.id);
+      } else if (discordClient) {
+        // Announce newly published extension to all configured channels
+        announceNewExtension(discordClient, ext).catch((err) =>
+          console.error(`[registry] Error announcing extension ${ext.id}:`, err)
+        );
+        announcedExtensions.mark(ext.id);
+      }
+    }
+  }
+
   // Notify listeners about trust-level changes
   if (prevExtensions.length > 0 && refreshCallbacks.length > 0) {
     for (const cb of refreshCallbacks) {
@@ -102,6 +122,34 @@ export async function refreshRegistry(): Promise<void> {
       }
     }
   }
+}
+
+/** Announce a new extension to all configured announcement channels across guilds. */
+export async function announceNewExtension(
+  client: Client,
+  ext: Extension
+): Promise<number> {
+  let sent = 0;
+  for (const guild of client.guilds.cache.values()) {
+    const channelIds = announceChannels.list(guild.id);
+    for (const channelId of channelIds) {
+      try {
+        const channel = await client.channels
+          .fetch(channelId)
+          .catch(() => null);
+        if (!channel || !(channel instanceof TextChannel)) continue;
+        await channel.send({ embeds: [newExtensionEmbed(ext)] });
+        sent++;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[registry] Failed to send extension announcement to ${channelId}: ${msg}`
+        );
+      }
+    }
+  }
+  console.log(`[registry] Announced new extension '${ext.name}' (${ext.id}) to ${sent} channel(s)`);
+  return sent;
 }
 
 // ---------------------------------------------------------------------------
@@ -155,9 +203,9 @@ export function getRegistryStatus(): RegistryStatusInfo {
 }
 
 /** Start a background refresh loop (every CACHE_TTL_MS). */
-export function startRegistryRefreshLoop(): void {
+export function startRegistryRefreshLoop(discordClient?: Client): void {
   const loop = async () => {
-    await refreshRegistry();
+    await refreshRegistry(discordClient);
     setTimeout(loop, CACHE_TTL_MS);
   };
   setTimeout(loop, CACHE_TTL_MS); // first manual refresh is done at startup

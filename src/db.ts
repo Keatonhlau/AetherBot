@@ -60,6 +60,11 @@ db.exec(`
     verified_at     INTEGER NOT NULL,
     PRIMARY KEY (discord_user_id, extension_id)
   );
+
+  CREATE TABLE IF NOT EXISTS announced_extensions (
+    extension_id TEXT PRIMARY KEY,
+    announced_at INTEGER NOT NULL
+  );
 `);
 
 // ---------------------------------------------------------------------------
@@ -211,6 +216,33 @@ export const announcedReleases = {
   },
   mark(releaseId: number, tagName: string): void {
     _markAnnounced.run(releaseId, tagName, Date.now());
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Prepared statements — announced_extensions
+// ---------------------------------------------------------------------------
+
+const _isExtAnnounced = db.prepare<[string], { extension_id: string }>(
+  "SELECT extension_id FROM announced_extensions WHERE extension_id = ?"
+);
+const _markExtAnnounced = db.prepare(
+  `INSERT OR IGNORE INTO announced_extensions (extension_id, announced_at)
+   VALUES (?, ?)`
+);
+const _countAnnouncedExts = db.prepare<[], { count: number }>(
+  "SELECT COUNT(*) as count FROM announced_extensions"
+);
+
+export const announcedExtensions = {
+  has(extensionId: string): boolean {
+    return !!_isExtAnnounced.get(extensionId);
+  },
+  mark(extensionId: string): void {
+    _markExtAnnounced.run(extensionId, Date.now());
+  },
+  count(): number {
+    return _countAnnouncedExts.get()?.count ?? 0;
   },
 };
 

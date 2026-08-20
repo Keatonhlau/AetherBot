@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifiedExtensions = exports.announceChannels = exports.guildSettings = exports.announcedReleases = exports.verificationTokens = exports.githubLinks = void 0;
+exports.verifiedExtensions = exports.announceChannels = exports.guildSettings = exports.announcedExtensions = exports.announcedReleases = exports.verificationTokens = exports.githubLinks = void 0;
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
@@ -60,6 +60,11 @@ db.exec(`
     extension_id    TEXT NOT NULL,
     verified_at     INTEGER NOT NULL,
     PRIMARY KEY (discord_user_id, extension_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS announced_extensions (
+    extension_id TEXT PRIMARY KEY,
+    announced_at INTEGER NOT NULL
   );
 `);
 // ---------------------------------------------------------------------------
@@ -134,6 +139,24 @@ exports.announcedReleases = {
     },
     mark(releaseId, tagName) {
         _markAnnounced.run(releaseId, tagName, Date.now());
+    },
+};
+// ---------------------------------------------------------------------------
+// Prepared statements — announced_extensions
+// ---------------------------------------------------------------------------
+const _isExtAnnounced = db.prepare("SELECT extension_id FROM announced_extensions WHERE extension_id = ?");
+const _markExtAnnounced = db.prepare(`INSERT OR IGNORE INTO announced_extensions (extension_id, announced_at)
+   VALUES (?, ?)`);
+const _countAnnouncedExts = db.prepare("SELECT COUNT(*) as count FROM announced_extensions");
+exports.announcedExtensions = {
+    has(extensionId) {
+        return !!_isExtAnnounced.get(extensionId);
+    },
+    mark(extensionId) {
+        _markExtAnnounced.run(extensionId, Date.now());
+    },
+    count() {
+        return _countAnnouncedExts.get()?.count ?? 0;
     },
 };
 // ---------------------------------------------------------------------------

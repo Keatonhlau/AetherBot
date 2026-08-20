@@ -148,7 +148,7 @@ async function main(): Promise<void> {
     console.log(`[discord] Logged in as ${readyClient.user.tag}`);
 
     // Initial registry load
-    await refreshRegistry();
+    await refreshRegistry(readyClient);
 
     // Register registry refresh callback for role re-sync
     onRegistryRefresh(async (prev: Extension[], next: Extension[]) => {
@@ -172,7 +172,7 @@ async function main(): Promise<void> {
     });
 
     // Start background registry refresh loop
-    startRegistryRefreshLoop();
+    startRegistryRefreshLoop(readyClient);
 
     // Sync owner roles across all guilds on startup
     for (const guild of readyClient.guilds.cache.values()) {

@@ -1,3 +1,4 @@
+import { Client } from "discord.js";
 export interface Extension {
     id: string;
     name: string;
@@ -15,7 +16,9 @@ export interface RegistryCache {
     fetchedAt: number;
     healthy: boolean;
 }
-export declare function refreshRegistry(): Promise<void>;
+export declare function refreshRegistry(discordClient?: Client): Promise<void>;
+/** Announce a new extension to all configured announcement channels across guilds. */
+export declare function announceNewExtension(client: Client, ext: Extension): Promise<number>;
 export declare function onRegistryRefresh(cb: (prev: Extension[], next: Extension[]) => void): void;
 export declare function getRegistry(): Promise<Extension[]>;
 export declare function getExtension(id: string): Extension | undefined;
@@ -28,5 +31,5 @@ export interface RegistryStatusInfo {
 }
 export declare function getRegistryStatus(): RegistryStatusInfo;
 /** Start a background refresh loop (every CACHE_TTL_MS). */
-export declare function startRegistryRefreshLoop(): void;
+export declare function startRegistryRefreshLoop(discordClient?: Client): void;
 //# sourceMappingURL=registry.d.ts.map
