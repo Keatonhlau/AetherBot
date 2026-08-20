@@ -134,7 +134,16 @@ export async function fetchLatestRelease(
   repo?: string
 ): Promise<GitHubRelease | null> {
   const gh = new GitHubClient(config.githubToken);
-  const result = await gh.getLatestRelease(repo ?? config.githubRepo);
-  if (!result.ok) return null;
-  return result.data;
+  const targetRepo = repo ?? config.githubRepo;
+  
+  // Fetch releases list to include prereleases (GitHub /releases/latest API ignores prereleases)
+  const result = await gh.getReleases(targetRepo);
+  if (result.ok && result.data.length > 0) {
+    const nonDrafts = result.data.filter((r) => !r.draft);
+    if (nonDrafts.length > 0) return nonDrafts[0];
+  }
+
+  // Fallback to getLatestRelease if list call failed
+  const fallback = await gh.getLatestRelease(targetRepo);
+  return fallback.ok ? fallback.data : null;
 }
