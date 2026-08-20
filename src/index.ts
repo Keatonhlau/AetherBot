@@ -95,13 +95,9 @@ async function main(): Promise<void> {
   // Register with Discord
   await registerCommands(commands);
 
-  // Create Discord client (minimal intents)
+  // Create Discord client (standard non-privileged intent)
   const client = new Client({
-    intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMembers,
-    ],
-    partials: [Partials.GuildMember],
+    intents: [GatewayIntentBits.Guilds],
   });
 
   // ---------------------------------------------------------------------------

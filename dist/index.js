@@ -88,13 +88,9 @@ async function main() {
     console.log(`[aetherbot] Loaded ${commands.size} commands`);
     // Register with Discord
     await registerCommands(commands);
-    // Create Discord client (minimal intents)
+    // Create Discord client (standard non-privileged intent)
     const client = new discord_js_1.Client({
-        intents: [
-            discord_js_1.GatewayIntentBits.Guilds,
-            discord_js_1.GatewayIntentBits.GuildMembers,
-        ],
-        partials: [discord_js_1.Partials.GuildMember],
+        intents: [discord_js_1.GatewayIntentBits.Guilds],
     });
     // ---------------------------------------------------------------------------
     // Interaction handler
