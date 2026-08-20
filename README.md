@@ -363,4 +363,6 @@ The SQLite database is stored at `data/aetherbot.db`. Ensure this path is on per
 
 ## License
 
-GPL-3.0-only — consistent with the Aether launcher.
+Copyright (c) 2026 wayback09. All Rights Reserved.
+
+This software is proprietary. No permission is granted to copy, modify, distribute, or host this software without explicit permission from the author.

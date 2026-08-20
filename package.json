@@ -15,7 +15,7 @@
     "bot"
   ],
   "author": "wayback09",
-  "license": "GPL-3.0-only",
+  "license": "UNLICENSED",
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "discord.js": "^14.14.1",
