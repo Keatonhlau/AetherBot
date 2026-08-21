@@ -1,1 +1,1 @@
-{"version":3,"file":"announcements.d.ts","sourceRoot":"","sources":["../../src/commands/announcements.ts"],"names":[],"mappings":"AAIA,OAAO,EAGL,2BAA2B,EAE5B,MAAM,YAAY,CAAC;AA2CpB,iBAAe,qBAAqB,CAClC,WAAW,EAAE,2BAA2B,GACvC,OAAO,CAAC,IAAI,CAAC,CAiEf;AAmFD,eAAO,MAAM,QAAQ;;;GASpB,CAAC"}
+{"version":3,"file":"announcements.d.ts","sourceRoot":"","sources":["../../src/commands/announcements.ts"],"names":[],"mappings":"AAIA,OAAO,EAGL,2BAA2B,EAE5B,MAAM,YAAY,CAAC;AA2CpB,iBAAe,qBAAqB,CAClC,WAAW,EAAE,2BAA2B,GACvC,OAAO,CAAC,IAAI,CAAC,CAiEf;AAqGD,eAAO,MAAM,QAAQ;;;GASpB,CAAC"}

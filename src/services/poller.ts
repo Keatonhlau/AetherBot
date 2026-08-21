@@ -26,14 +26,16 @@ export async function announceRelease(
         const channel = await client.channels
           .fetch(channelId)
           .catch(() => null);
-        if (!channel || !(channel instanceof TextChannel)) {
+        if (!channel || !channel.isTextBased()) {
           console.warn(
-            `[poller] Channel ${channelId} in guild ${guild.id} not found or not a text channel`
+            `[poller] Channel ${channelId} in guild ${guild.id} not found or not text-based`
           );
           continue;
         }
-        await channel.send({ embeds: [releaseEmbed(release)] });
-        sent++;
+        if ("send" in channel && typeof channel.send === "function") {
+          await channel.send({ embeds: [releaseEmbed(release)] });
+          sent++;
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(

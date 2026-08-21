@@ -21,7 +21,7 @@ const announceChannelCommand = new discord_js_1.SlashCommandBuilder()
     .addChannelOption((opt) => opt
     .setName("channel")
     .setDescription("The channel to add")
-    .addChannelTypes(discord_js_1.ChannelType.GuildText)
+    .addChannelTypes(discord_js_1.ChannelType.GuildText, discord_js_1.ChannelType.GuildAnnouncement)
     .setRequired(true)))
     .addSubcommand((sub) => sub
     .setName("remove")
@@ -29,7 +29,7 @@ const announceChannelCommand = new discord_js_1.SlashCommandBuilder()
     .addChannelOption((opt) => opt
     .setName("channel")
     .setDescription("The channel to remove")
-    .addChannelTypes(discord_js_1.ChannelType.GuildText)
+    .addChannelTypes(discord_js_1.ChannelType.GuildText, discord_js_1.ChannelType.GuildAnnouncement)
     .setRequired(true)))
     .addSubcommand((sub) => sub
     .setName("list")
@@ -119,29 +119,43 @@ async function handleAnnounceNow(interaction) {
     }
     // Post to channels in this guild only (don't mark as announced globally)
     let sent = 0;
+    let failReason = null;
     for (const channelId of channels) {
         try {
             const channel = await interaction.client.channels
                 .fetch(channelId)
                 .catch(() => null);
-            if (!channel || !("send" in channel))
+            if (!channel || !channel.isTextBased()) {
+                failReason = `Channel <#${channelId}> not found or not text-based.`;
                 continue;
-            await channel.send({
-                embeds: [
-                    (0, embeds_js_1.releaseEmbed)(release),
-                ],
-            });
-            sent++;
+            }
+            if ("send" in channel && typeof channel.send === "function") {
+                await channel.send({
+                    embeds: [(0, embeds_js_1.releaseEmbed)(release)],
+                });
+                sent++;
+            }
         }
         catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
             console.error(`[announce-now] Failed to send to ${channelId}:`, err);
+            failReason = msg;
         }
     }
-    await interaction.editReply({
-        embeds: [
-            (0, embeds_js_1.successEmbed)("Release Posted", `Posted **${release.name || release.tag_name}** to ${sent} channel(s).`),
-        ],
-    });
+    if (sent > 0) {
+        await interaction.editReply({
+            embeds: [
+                (0, embeds_js_1.successEmbed)("Release Posted", `Posted **${release.name || release.tag_name}** to ${sent} channel(s).`),
+            ],
+        });
+    }
+    else {
+        await interaction.editReply({
+            embeds: [
+                (0, embeds_js_1.errorEmbed)("Announcement Failed", `Could not send announcement to configured channel(s).\n\n**Reason:** ${failReason ?? "Bot lacks permission."}\n\nMake sure the bot role has **View Channel**, **Send Messages**, and **Embed Links** permissions in the announcement channel.`),
+            ],
+        });
+    }
 }
 // ---------------------------------------------------------------------------
 // Exports

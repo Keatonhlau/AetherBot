@@ -6,7 +6,6 @@ exports.announceRelease = announceRelease;
 exports.startPoller = startPoller;
 exports.stopPoller = stopPoller;
 exports.fetchLatestRelease = fetchLatestRelease;
-const discord_js_1 = require("discord.js");
 const config_js_1 = require("../config.js");
 const github_js_1 = require("./github.js");
 const db_js_1 = require("../db.js");
@@ -23,12 +22,14 @@ async function announceRelease(client, release, mark = true) {
                 const channel = await client.channels
                     .fetch(channelId)
                     .catch(() => null);
-                if (!channel || !(channel instanceof discord_js_1.TextChannel)) {
-                    console.warn(`[poller] Channel ${channelId} in guild ${guild.id} not found or not a text channel`);
+                if (!channel || !channel.isTextBased()) {
+                    console.warn(`[poller] Channel ${channelId} in guild ${guild.id} not found or not text-based`);
                     continue;
                 }
-                await channel.send({ embeds: [(0, embeds_js_1.releaseEmbed)(release)] });
-                sent++;
+                if ("send" in channel && typeof channel.send === "function") {
+                    await channel.send({ embeds: [(0, embeds_js_1.releaseEmbed)(release)] });
+                    sent++;
+                }
             }
             catch (err) {
                 const msg = err instanceof Error ? err.message : String(err);

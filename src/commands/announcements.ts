@@ -28,7 +28,7 @@ const announceChannelCommand = new SlashCommandBuilder()
         opt
           .setName("channel")
           .setDescription("The channel to add")
-          .addChannelTypes(ChannelType.GuildText)
+          .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
           .setRequired(true)
       )
   )
@@ -40,7 +40,7 @@ const announceChannelCommand = new SlashCommandBuilder()
         opt
           .setName("channel")
           .setDescription("The channel to remove")
-          .addChannelTypes(ChannelType.GuildText)
+          .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
           .setRequired(true)
       )
   )
@@ -169,31 +169,49 @@ async function handleAnnounceNow(
 
   // Post to channels in this guild only (don't mark as announced globally)
   let sent = 0;
+  let failReason: string | null = null;
+
   for (const channelId of channels) {
     try {
       const channel = await interaction.client.channels
         .fetch(channelId)
         .catch(() => null);
-      if (!channel || !("send" in channel)) continue;
-      await (channel as { send: (opts: unknown) => Promise<unknown> }).send({
-        embeds: [
-          releaseEmbed(release),
-        ],
-      });
-      sent++;
+      if (!channel || !channel.isTextBased()) {
+        failReason = `Channel <#${channelId}> not found or not text-based.`;
+        continue;
+      }
+      if ("send" in channel && typeof channel.send === "function") {
+        await channel.send({
+          embeds: [releaseEmbed(release)],
+        });
+        sent++;
+      }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error(`[announce-now] Failed to send to ${channelId}:`, err);
+      failReason = msg;
     }
   }
 
-  await interaction.editReply({
-    embeds: [
-      successEmbed(
-        "Release Posted",
-        `Posted **${release.name || release.tag_name}** to ${sent} channel(s).`
-      ),
-    ],
-  });
+  if (sent > 0) {
+    await interaction.editReply({
+      embeds: [
+        successEmbed(
+          "Release Posted",
+          `Posted **${release.name || release.tag_name}** to ${sent} channel(s).`
+        ),
+      ],
+    });
+  } else {
+    await interaction.editReply({
+      embeds: [
+        errorEmbed(
+          "Announcement Failed",
+          `Could not send announcement to configured channel(s).\n\n**Reason:** ${failReason ?? "Bot lacks permission."}\n\nMake sure the bot role has **View Channel**, **Send Messages**, and **Embed Links** permissions in the announcement channel.`
+        ),
+      ],
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
