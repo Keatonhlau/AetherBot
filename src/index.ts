@@ -20,6 +20,7 @@ import {
 } from "./services/registry.js";
 import { syncAllRoles } from "./services/roles.js";
 import type { Extension } from "./services/registry.js";
+import Ticket from "./services/tickets.js";
 
 // ---------------------------------------------------------------------------
 // Command loader
@@ -104,31 +105,33 @@ async function main(): Promise<void> {
   // Interaction handler
   // ---------------------------------------------------------------------------
   client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+    if (interaction.isChatInputCommand()) {
+      const cmd = commands.get(interaction.commandName);
+      if (!cmd) return;
 
-    const cmd = commands.get(interaction.commandName);
-    if (!cmd) return;
-
-    try {
-      await cmd.execute(interaction);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(
-        `[discord] Error executing /${interaction.commandName}: ${msg}`
-      );
-      const reply = {
-        content: "An unexpected error occurred. Please try again later.",
-        ephemeral: true,
-      };
       try {
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp(reply);
-        } else {
-          await interaction.reply(reply);
+        await cmd.execute(interaction);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(
+          `[discord] Error executing /${interaction.commandName}: ${msg}`
+        );
+        const reply = {
+          content: "An unexpected error occurred. Please try again later.",
+          ephemeral: true,
+        };
+        try {
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(reply);
+          } else {
+            await interaction.reply(reply);
+          }
+        } catch {
+          // Ignore reply failures
         }
-      } catch {
-        // Ignore reply failures
       }
+    } else if (interaction.isButton()) {
+      if (interaction.customId == "tickets") Ticket(interaction)
     }
   });
 

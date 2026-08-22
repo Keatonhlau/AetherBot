@@ -17,6 +17,7 @@ export interface Config {
   verifyTokenTtlHours: number;
   ownerUserIds: string[];
   guilds: Record<string, GuildConfig>;
+  moderatorRoleId: string;
 }
 
 function loadFileConfig(): Partial<Config> {
@@ -73,6 +74,7 @@ function loadConfig(): Config {
       24,
     ownerUserIds: ownerIds,
     guilds: (file.guilds as Record<string, GuildConfig> | undefined) ?? {},
+    moderatorRoleId: process.env["MODERATOR_ROLE_ID"] ?? (file.moderatorRoleId as string | undefined) ?? ""
   };
 }
 
